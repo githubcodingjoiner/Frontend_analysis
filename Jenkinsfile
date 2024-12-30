@@ -48,20 +48,21 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            environment {
-                SONAR_TOKEN = credentials('sonar-token')
-            }
-            steps {
-                bat '''
-                set PATH=%SONAR_SCANNER_PATH%;%PATH%
-                sonar-scanner ^
-                -Dsonar.projectKey=MERN_frontend_pipeline ^
-                -Dsonar.sources=. ^
-                -Dsonar.host.url=http://localhost:9000 ^
-                -Dsonar.token=${SONAR_TOKEN}
-                '''
-            }
-        }
+    environment {
+        SONAR_TOKEN = credentials('sonar-token')
+    }
+    steps {
+        bat '''
+        set PATH=%SONAR_SCANNER_PATH%;%PATH%
+        sonar-scanner ^
+        -Dsonar.projectKey=MERN_frontend_pipeline ^
+        -Dsonar.sources=. ^
+        -Dsonar.host.url=http://localhost:9000 ^
+        -Dsonar.login=%SONAR_TOKEN%
+        '''
+    }
+}
+
     }
 
     post {
