@@ -1,10 +1,13 @@
 pipeline {
     agent any
 
+    tools{
+        nodejs 'sonarnode'
+    }
+
     environment {
-        NODEJS_HOME = tool name: 'nodejs', type: 'NodeJSInstallation' // Specify your NodeJS installation name in Jenkins
-        PATH = "${NODEJS_HOME}/bin:${env.PATH}"
-        SONAR_TOKEN = credentials('sonar-token') // Jenkins credentials ID for SonarQube token
+        NODEJS_HOME='C:\\Program Files\\nodejs'
+        SONAR_SCANNER_PATH='C:\\Users\\Admin\\Downloads\\sonar-scanner-6.2.1.4610-windows-x64\\bin'
     }
 
     stages {
@@ -14,33 +17,48 @@ pipeline {
             }
         }
 
-        stage('Build Frontend') {
-            steps {
-                dir('frontend') {
-                    bat '''
-                    npm install
-                    npm run build
-                    '''
-                }
+        stage('Install dependencies'){
+            steps{
+                bat '''
+                set PATH =%NODEJS_HOME%;%PATH%
+                npm install
+                '''
             }
         }
-
+        
+        stage('Lint'){
+            steps{
+                bat '''
+                set PATH=%NODEJS_HOME%;%PATH%
+                npm run lint
+                '''
+            }
+        }
+        
+         stage('Build'){
+            steps{
+                bat '''
+                set PATH=%NODEJS_HOME%;%PATH%
+                npm run build
+                '''
+            }
+        }
+        
         stage('SonarQube Analysis') {
+            environment{
+                SONAR_TOKEN = credentials('sonar-token')
+            }
             steps {
-                withSonarQubeEnv('sonarqube') { // SonarQube server name in Jenkins
-                    dir('frontend') {
-                        bat '''
-                        sonar-scanner ^
-                        -Dsonar.projectKey=MERN_frontend_pipeline ^
-                        -Dsonar.sources=. ^
-                        -Dsonar.host.url=http://localhost:9000 ^
-                        -Dsonar.token=${SONAR_TOKEN}
-                        '''
-                    }
-                }
+                    bat '''
+                    set PATH=%SONAR_SCANNER_PATH%;%PATH%
+                    sonar-scanner ^
+                    -Dsonar.projectKey=MERN_frontend_pipeline ^
+                    -Dsonar.sources=. ^
+                    -Dsonar.host.url=http://localhost:9000 ^
+                    -Dsonar.token=${SONAR_TOKEN}
+                    '''
             }
         }
-    }
 
     post {
         success {
