@@ -1,7 +1,7 @@
 pipeline {
     agent any
 
-    tools{
+    tools {
         nodejs 'sonarnode'
     }
 
@@ -17,48 +17,49 @@ pipeline {
             }
         }
 
-        stage('Install dependencies'){
-            steps{
+        stage('Install dependencies') {
+            steps {
                 bat '''
-                set PATH =%NODEJS_HOME%;%PATH%
+                set PATH=%NODEJS_HOME%;%PATH%
                 npm install
                 '''
             }
         }
-        
-        stage('Lint'){
-            steps{
+
+        stage('Lint') {
+            steps {
                 bat '''
                 set PATH=%NODEJS_HOME%;%PATH%
                 npm run lint
                 '''
             }
         }
-        
-         stage('Build'){
-            steps{
+
+        stage('Build') {
+            steps {
                 bat '''
                 set PATH=%NODEJS_HOME%;%PATH%
                 npm run build
                 '''
             }
         }
-        
+
         stage('SonarQube Analysis') {
-            environment{
+            environment {
                 SONAR_TOKEN = credentials('sonar-token')
             }
             steps {
-                    bat '''
-                    set PATH=%SONAR_SCANNER_PATH%;%PATH%
-                    sonar-scanner ^
-                    -Dsonar.projectKey=MERN_frontend_pipeline ^
-                    -Dsonar.sources=. ^
-                    -Dsonar.host.url=http://localhost:9000 ^
-                    -Dsonar.token=${SONAR_TOKEN}
-                    '''
+                bat '''
+                set PATH=%SONAR_SCANNER_PATH%;%PATH%
+                sonar-scanner ^
+                -Dsonar.projectKey=MERN_frontend_pipeline ^
+                -Dsonar.sources=. ^
+                -Dsonar.host.url=http://localhost:9000 ^
+                -Dsonar.token=${SONAR_TOKEN}
+                '''
             }
         }
+    }
 
     post {
         success {
