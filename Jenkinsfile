@@ -27,7 +27,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') { // SonarQube server name in Jenkins
+                withSonarQubeEnv('sonarqube') { // SonarQube server name in Jenkins
                     dir('frontend') {
                         bat '''
                         sonar-scanner ^
@@ -38,12 +38,6 @@ pipeline {
                         '''
                     }
                 }
-            }
-        }
-
-        stage('Archive Artifacts') {
-            steps {
-                archiveArtifacts artifacts: 'frontend/build/**, fingerprint: true
             }
         }
     }
