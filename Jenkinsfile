@@ -6,8 +6,8 @@ pipeline {
     }
 
     environment {
-        NODEJS_HOME='C:\\Program Files\\nodejs'
-        SONAR_SCANNER_PATH='C:\\Users\\Admin\\Downloads\\sonar-scanner-6.2.1.4610-windows-x64\\bin'
+        NODEJS_HOME = "C:\\Program Files\\nodejs"
+        SONAR_SCANNER_PATH = "C:\\Users\\Admin\\Downloads\\sonar-scanner-6.2.1.4610-windows-x64\\bin"
     }
 
     stages {
@@ -19,10 +19,12 @@ pipeline {
 
         stage('Install dependencies') {
             steps {
-                bat '''
-                set PATH=%NODEJS_HOME%;%PATH%
-                npm install
-                '''
+                retry(3) {
+                    bat '''
+                    set PATH=%NODEJS_HOME%;%PATH%
+                    npm install
+                    '''
+                }
             }
         }
 
@@ -30,7 +32,7 @@ pipeline {
             steps {
                 bat '''
                 set PATH=%NODEJS_HOME%;%PATH%
-                npm run lint
+                npm run lint || exit /b
                 '''
             }
         }
@@ -39,6 +41,7 @@ pipeline {
             steps {
                 bat '''
                 set PATH=%NODEJS_HOME%;%PATH%
+                npm install @babel/plugin-proposal-private-property-in-object --save-dev
                 npm run build
                 '''
             }
@@ -67,6 +70,10 @@ pipeline {
         }
         failure {
             echo 'Pipeline failed. Check the logs for errors.'
+            archiveArtifacts artifacts: '**/*.log', allowEmptyArchive: true
+        }
+        always {
+            cleanWs()
         }
     }
 }
